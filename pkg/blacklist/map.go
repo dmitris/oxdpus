@@ -16,7 +16,7 @@ import (
 	"encoding/binary"
 	"errors"
 	"fmt"
-	libbpf "github.com/rabbitstack/gobpf/elf"
+	libbpf "github.com/iovisor/gobpf/elf"
 	"github.com/sematext/oxdpus/pkg/xdp"
 	"net"
 	"unsafe"

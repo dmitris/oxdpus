@@ -15,7 +15,7 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
-	libbpf "github.com/rabbitstack/gobpf/elf"
+	libbpf "github.com/iovisor/gobpf/elf"
 	"github.com/sematext/oxdpus/pkg/xdp/prog/gen"
 	"net"
 )
@@ -24,6 +24,16 @@ const (
 	progName = "xdp/xdp_ip_filter"
 )
 
+// XDP_FLAGS values copied from github.com/iovisor/gobpf/bcc, module.go
+// https://github.com/iovisor/gobpf/blob/fb892541d416e3662d2aab072dba3df7410bec94/bcc/module.go#L59-L66
+const (
+	XDP_FLAGS_UPDATE_IF_NOEXIST = uint32(1) << iota
+	XDP_FLAGS_SKB_MODE
+	XDP_FLAGS_DRV_MODE
+	XDP_FLAGS_HW_MODE
+	XDP_FLAGS_MODES = XDP_FLAGS_SKB_MODE | XDP_FLAGS_DRV_MODE | XDP_FLAGS_HW_MODE
+	XDP_FLAGS_MASK  = XDP_FLAGS_UPDATE_IF_NOEXIST | XDP_FLAGS_MODES
+)
 // Hook provides a set of operations that allow for managing the execution of the XDP program
 // including attaching it on the network interface, harvesting various statistics or removing
 // the program from the interface.
@@ -62,8 +72,8 @@ func (h *Hook) Attach(dev string) error {
 		return fmt.Errorf("%s interface is not present. Please run `ip a` to list available interfaces", dev)
 	}
 	// attempt attach the XDP program
-	if err := h.mod.AttachXDP(dev, progName); err != nil {
-		return fmt.Errorf("couldn't attach XDP program to %s interface", dev)
+	if err := h.mod.AttachXDPWithFlags(dev, progName, XDP_FLAGS_SKB_MODE); err != nil {
+		return fmt.Errorf("couldn't attach XDP program to %s interface in skb mode", dev)
 	}
 	return nil
 }
