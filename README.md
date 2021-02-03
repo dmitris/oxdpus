@@ -48,6 +48,14 @@ $ oxdpus attach --dev=vethbd33820
 INFO XDP program successfully attached to vethbd33820 device
 ```
 
+If your system can only attach XDP program in xdpgeneric or SKB mode,
+use `--mode=skb` flag with the `attach` command:
+
+```bash
+$ oxdpus attach --dev=eth0 --mode=skb
+INFO XDP program successfully loaded from eth0 device
+```
+
 The magic happens after you add a couple of IP addresses to the blacklist:
 
 ```bash
@@ -69,6 +77,7 @@ INFO 172.17.0.2 address removed from the blacklist
 $ oxdpus detach --dev=vethbd33820
 INFO XDP program successfully unloaded from vethbd33820 device
 ```
+
 
 ### Bump max file descriptor limit
 

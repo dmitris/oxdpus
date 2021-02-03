@@ -24,16 +24,6 @@ const (
 	progName = "xdp/xdp_ip_filter"
 )
 
-// XDP_FLAGS values copied from github.com/iovisor/gobpf/bcc, module.go
-// https://github.com/iovisor/gobpf/blob/fb892541d416e3662d2aab072dba3df7410bec94/bcc/module.go#L59-L66
-const (
-	XDP_FLAGS_UPDATE_IF_NOEXIST = uint32(1) << iota
-	XDP_FLAGS_SKB_MODE
-	XDP_FLAGS_DRV_MODE
-	XDP_FLAGS_HW_MODE
-	XDP_FLAGS_MODES = XDP_FLAGS_SKB_MODE | XDP_FLAGS_DRV_MODE | XDP_FLAGS_HW_MODE
-	XDP_FLAGS_MASK  = XDP_FLAGS_UPDATE_IF_NOEXIST | XDP_FLAGS_MODES
-)
 // Hook provides a set of operations that allow for managing the execution of the XDP program
 // including attaching it on the network interface, harvesting various statistics or removing
 // the program from the interface.
@@ -53,8 +43,14 @@ func NewHook() (*Hook, error) {
 	return &Hook{mod: mod}, nil
 }
 
-// Attach loads the XDP program to specified interface.
+// Attach loads the XDP program to specified interface with the default flags.
 func (h *Hook) Attach(dev string) error {
+	return h.AttachWithFlags(dev, 0)
+}
+
+// AttachWithFlags loads the XDP program to specified interface
+// with the provided flags (0 for none).
+func (h *Hook) AttachWithFlags(dev string, flags uint32) error {
 	// before we proceed with attaching make sure that the
 	// provided device (interface) is present on the machine
 	ifaces, err := net.Interfaces()
@@ -72,15 +68,16 @@ func (h *Hook) Attach(dev string) error {
 		return fmt.Errorf("%s interface is not present. Please run `ip a` to list available interfaces", dev)
 	}
 	// attempt attach the XDP program
-	if err := h.mod.AttachXDPWithFlags(dev, progName, XDP_FLAGS_SKB_MODE); err != nil {
-		return fmt.Errorf("couldn't attach XDP program to %s interface in skb mode", dev)
+	if err := h.mod.AttachXDPWithFlags(dev, progName, flags); err != nil {
+		// TODO: translate flags to a user-friendly name
+		return fmt.Errorf("couldn't attach XDP program to %s interface with flags %d", dev, flags)
 	}
 	return nil
 }
 
 // Remove unloads the XDP program from the interface.
 func (h *Hook) Remove(dev string) error {
-	if err := h.mod.RemoveXDP(dev); err != nil {
+	if err := h.mod.RemoveXDPWithFlags(dev, 2); err != nil {
 		return fmt.Errorf("couldn't unload XDP program from %s interface", dev)
 	}
 	return nil

@@ -36,6 +36,7 @@ func init() {
 	})
 	attachCmd := attach.NewCommand(logger)
 	attachCmd.Flags().StringP("dev", "d", "eth0", "network device to attach the XDP program")
+	attachCmd.Flags().StringP("mode", "m", "", "'skb' to attach in SKB_MODE")
 	detachCmd := detach.NewCommand(logger)
 	detachCmd.Flags().StringP("dev", "d", "eth0", "network device to attach the XDP program")
 	addCmd := add.NewCommand(logger)

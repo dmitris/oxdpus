@@ -7,3 +7,5 @@ require (
 	github.com/sirupsen/logrus v1.6.0
 	github.com/spf13/cobra v1.0.0
 )
+
+replace github.com/iovisor/gobpf => ./vendordeps/github.com/iovisor/gobpf
